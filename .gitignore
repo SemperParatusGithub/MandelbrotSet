@@ -1,0 +1,9 @@
+# Directories
+Binaries/
+
+# VS
+.vs/
+**.sln
+**.vcxproj
+**.vcxproj.filters
+**.vcxproj.user
