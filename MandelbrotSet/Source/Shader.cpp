@@ -49,6 +49,23 @@ void Shader::SetFloat4(const char *name, const vec4 &values)
 	glUniform4f(glGetUniformLocation(m_ShaderHandle, name), values.x, values.y, values.z, values.w);
 }
 
+void Shader::SetDouble(const char *name, double value)
+{
+	glUniform1d(glGetUniformLocation(m_ShaderHandle, name), value);
+}
+void Shader::SetDouble2(const char *name, dvec2 values)
+{
+	glUniform2d(glGetUniformLocation(m_ShaderHandle, name), values.x, values.y);
+}
+void Shader::SetDouble3(const char *name, dvec3 values)
+{
+	glUniform3d(glGetUniformLocation(m_ShaderHandle, name), values.x, values.y, values.z);
+}
+void Shader::SetDouble4(const char *name, dvec4 values)
+{
+	glUniform4d(glGetUniformLocation(m_ShaderHandle, name), values.x, values.y, values.z, values.w);
+}
+
 void Shader::SetInt(const char *name, int value)
 {
 	glUniform1i(glGetUniformLocation(m_ShaderHandle, name), value);

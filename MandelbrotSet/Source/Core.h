@@ -21,6 +21,20 @@ typedef struct
 	float x, y, z, w;
 } vec4;
 
+typedef struct
+{
+	double x, y;
+} dvec2;
+typedef struct
+{
+	double x, y, z;
+} dvec3;
+typedef struct
+{
+	double x, y, z, w;
+} dvec4;
+
+
 
 using string = std::string;
 

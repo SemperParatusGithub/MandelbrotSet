@@ -20,6 +20,11 @@ public:
 	void SetFloat3(const char *name, const vec3 &values);
 	void SetFloat4(const char *name, const vec4 &values);
 
+	void SetDouble(const char *name, double value);
+	void SetDouble2(const char *name, dvec2 values);
+	void SetDouble3(const char *name, dvec3 values);
+	void SetDouble4(const char *name, dvec4 values);
+
 	virtual void SetInt(const char *name, int value);
 
 	void SetIntArray(const char *name, int *values, u32 count);
