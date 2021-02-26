@@ -35,7 +35,6 @@ typedef struct
 } dvec4;
 
 
-
 using string = std::string;
 
 #ifdef _DEBUG
