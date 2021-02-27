@@ -25,6 +25,8 @@ Application::Application()
         { Instance()->OnMouseScrolled((float) xOffset, (float) yOffset); });
     glfwSetFramebufferSizeCallback(m_Window, [](GLFWwindow *window, int sizeX, int sizeY)
         { Instance()->OnResize((u32) sizeX, (u32) sizeY); });
+    glfwSetCursorPosCallback(m_Window, [](GLFWwindow *window, double xOffset, double yOffset)
+        { Instance()->OnMouseMoved((float) xOffset, (float) yOffset); });
 
 	assert(gladLoadGLLoader((GLADloadproc) glfwGetProcAddress));
 	glViewport(0, 0, 1280, 720);
@@ -68,8 +70,12 @@ void Application::Run()
         m_MandelbrotShader.SetFloat4("u_Color", m_Color);
         RenderFullscreenQuad();
 
+        m_BlockMouseEvents = ImGui::GetIO().WantCaptureMouse;
+
         ImGui::Begin("Hello World");
-        ImGui::Text("Test!");
+        ImGui::Text("FPS: %.2f", ImGui::GetIO().Framerate);
+        ImGui::SliderInt("u_MaxIterations", &m_MaxIterations, 0, 1000);
+        ImGui::ColorEdit4("Color", &m_Color.x);
         ImGui::End();
 
         ImGuiUtil::EndFrame();
@@ -78,8 +84,24 @@ void Application::Run()
 
 void Application::OnMouseScrolled(float xOffset, float yOffset)
 {
+    if(!m_BlockMouseEvents)
+        m_ZoomLevel += yOffset * zoomSpeed * m_ZoomLevel / 10.0f;
+  
+    if (m_ZoomLevel < minZoomLevel)
+        m_ZoomLevel = minZoomLevel;
 }
+void Application::OnMouseMoved(float xOffset, float yOffset)
+{
+    vec2 offset = { m_LastMousePosition.x - xOffset,
+                    yOffset - m_LastMousePosition.y };
 
+    if (glfwGetMouseButton(m_Window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS && 
+        !m_BlockMouseEvents)
+    {
+        m_CameraPosition.x-= offset.x / m_ZoomLevel;
+        m_CameraPosition.y-= offset.y / m_ZoomLevel;
+    }
+}
 void Application::OnResize(u32 width, u32 height)
 {
     glViewport(0, 0, width, height);
@@ -92,7 +114,6 @@ dvec2 Application::GetMousePosition()
 
     return dvec2 { xPos, yPos };
 }
-
 dvec2 Application::GetMainViewportSize()
 {
     int width, height;

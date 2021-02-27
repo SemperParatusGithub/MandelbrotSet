@@ -34,11 +34,11 @@ float Mandelbrot(dvec2 fragCoord)
 	return n / float(u_MaxIterations);
 }
 
-vec3 MapToColor(float a)
+vec3 MapToColor(float v)
 {
-	float r = 10.0 * u_Color.x * (1.0 - a) * a * a * a;
-	float g = 10.0 * u_Color.y * (1.0 - a) * (1.0 - a) * a * a;
-	float b = 10.0 * u_Color.z * (1.0 - a) * (1.0 - a) * (1.0 - a) * a;
+	float r = 10.0 * u_Color.x * (1.0 - v) * v * v * v;
+	float g = 10.0 * u_Color.y * (1.0 - v) * (1.0 - v) * v * v;
+	float b = 10.0 * u_Color.z * (1.0 - v) * (1.0 - v) * (1.0 - v) * v;
 	
 	return vec3(r, g, b);
 }
