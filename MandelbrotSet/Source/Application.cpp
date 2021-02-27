@@ -65,10 +65,16 @@ void Application::Run()
 
         m_BlockMouseEvents = ImGui::GetIO().WantCaptureMouse;
 
-        ImGui::Begin("Hello World");
+        ImGui::Begin("Settings");
         ImGui::Text("FPS: %.2f", ImGui::GetIO().Framerate);
-        ImGui::SliderInt("u_MaxIterations", &m_MaxIterations, 0, 500);
-        ImGui::ColorEdit4("Color", &m_Color.x);
+
+        ImGui::Text("Max Iterations");
+        ImGui::SetNextItemWidth(-1.0f);
+        ImGui::SliderInt("##maxIterations", &m_MaxIterations, 0, 500);
+
+        ImGui::Text("Color");
+        ImGui::SetNextItemWidth(-1.0f);
+        ImGui::ColorEdit4("##color", &m_Color.x);
         ImGui::End();
 
         ImGuiUtil::EndFrame();
