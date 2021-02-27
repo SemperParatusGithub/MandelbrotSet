@@ -31,6 +31,8 @@ private:
 
 	static void RenderFullscreenQuad();
 
+	void TakeScreenShot(const std::string &filepath);
+
 private:
 	static Application *s_Instance;
 	static Application *Instance();
@@ -42,7 +44,7 @@ private:
 	dvec2 m_LastMousePosition = { 0.0, 0.0 };
 	bool m_BlockMouseEvents = false;
 
-	int m_MaxIterations = 200;
+	int m_MaxIterations = 100;
 	double m_ZoomLevel = 200.0f;
 	dvec2 m_CameraPosition = { 0.0, 0.0 };
 	vec4 m_Color = { 0.5f, 1.0f, 0.7f };

@@ -1,11 +1,14 @@
 #include "Application.h"
 
 #include <assert.h>
+#include <sstream>
+#include <time.h>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 #include <imgui.h>
+#include <stb_image_write.h>
 
 
 Application *Application::s_Instance = nullptr;
@@ -75,6 +78,10 @@ void Application::Run()
         ImGui::Text("Color");
         ImGui::SetNextItemWidth(-1.0f);
         ImGui::ColorEdit4("##color", &m_Color.x);
+
+        ImGui::Spacing();
+        if (ImGui::Button("Take Screenshot"))
+            TakeScreenShot("test.png");
         ImGui::End();
 
         ImGuiUtil::EndFrame();
@@ -161,6 +168,35 @@ void Application::RenderFullscreenQuad()
     glBindVertexArray(VertexArray);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
     glBindVertexArray(0);
+}
+
+void Application::TakeScreenShot(const std::string &filepath)
+{
+    GLint viewport[4];
+    glGetIntegerv(GL_VIEWPORT, viewport);
+
+    std::size_t width = (std::size_t) GetMainViewportSize().x;
+    std::size_t height = (std::size_t) GetMainViewportSize().y;
+
+    char *data = new char[width * height * 3];
+
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, data);
+
+    time_t theTime = time(nullptr);
+    struct tm *aTime = localtime(&theTime);
+
+    std::stringstream name;
+
+    name << "Screenshot_";
+    name << aTime->tm_year + 1900 << "-" << aTime->tm_mon + 1 << "-" << aTime->tm_mday << "_";
+    name << aTime->tm_hour << "-" << aTime->tm_min << "-" << aTime->tm_sec;
+    name << ".png";
+
+    assert(stbi_write_png(name.str().c_str(), width, height, 3, data, 0));
+    delete[] data;
+
+    LOG_INFO("Saved Screenshot: %s", name.str().c_str());
 }
 
 Application *Application::Instance()

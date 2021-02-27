@@ -58,7 +58,7 @@ void ImGuiUtil::CreateContext()
 
 	ImFont *font = io.Fonts->AddFontFromFileTTF("Fonts/OpenSans.ttf", 32);
 	io.FontDefault = font;
-	ImGui::GetStyle().WindowMinSize = ImVec2(350.0f, 250.0f);
+	ImGui::GetStyle().WindowMinSize = ImVec2(350.0f, 300.0f);
 
 	GLFWwindow *window = (GLFWwindow *) Application::Instance()->m_Window;
 	ImGui_ImplGlfw_InitForOpenGL(window, true);

@@ -26,13 +26,15 @@ project "MandelbrotSet"
 
 	files { 
  		"MandelbrotSet/Source/**.h",
-		"MandelbrotSet/Source/**.cpp"
+		"MandelbrotSet/Source/**.cpp",
+		"MandelbrotSet/External/stb/stb_image_write.cpp"
 	}
 	includedirs { 
 		"MandelbrotSet/Source",
 		"MandelbrotSet/External/GLFW/include",
 		"MandelbrotSet/External/Glad/include",
-		"MandelbrotSet/External/imgui"
+		"MandelbrotSet/External/imgui",
+		"MandelbrotSet/External/stb"
 	}
 
 	links { "GLFW", "Glad", "ImGui", "opengl32.lib" }
