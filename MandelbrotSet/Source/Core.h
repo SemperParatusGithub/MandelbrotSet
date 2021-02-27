@@ -35,11 +35,9 @@ typedef struct
 } dvec4;
 
 
-using string = std::string;
-
 #ifdef _DEBUG
-	#define LOG_INFO(...)  { printf("[INFO]");  printf(__VA_ARGS__); printf("\n"); }
-	#define LOG_ERROR(...) { printf("[ERROR]"); printf(__VA_ARGS__); printf("\n"); }
+	#define LOG_INFO(...)  { printf("[INFO]: ");  printf(__VA_ARGS__); printf("\n"); }
+	#define LOG_ERROR(...) { printf("[ERROR]: "); printf(__VA_ARGS__); printf("\n"); }
 #else
 	#define LOG_INFO(...) 
 	#define LOG_ERROR(...)

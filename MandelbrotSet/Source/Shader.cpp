@@ -8,7 +8,7 @@
 #include <glad/glad.h>
 
 
-Shader::Shader(const string &filepath)
+Shader::Shader(const std::string &filepath)
 {
 	Load(filepath);
 }
@@ -17,7 +17,7 @@ Shader::~Shader()
 	glDeleteProgram(m_ShaderHandle);
 }
 
-void Shader::Load(const string &filepath)
+void Shader::Load(const std::string &filepath)
 {
 	const auto [vertexSource, fragmentSource] = LoadShaderFromFile(filepath);
 	m_ShaderHandle = CreateShader(vertexSource, fragmentSource);
@@ -84,7 +84,7 @@ void Shader::SetDoubleArray(const char *name, double *values, u32 count)
 	glUniform1dv(glGetUniformLocation(m_ShaderHandle, name), count, values);
 }
 
-std::pair<string, string> Shader::LoadShaderFromFile(const string &filepath)
+std::pair<std::string, std::string> Shader::LoadShaderFromFile(const std::string &filepath)
 {
 	std::ifstream stream(filepath);
 

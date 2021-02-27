@@ -46,7 +46,9 @@ void ImGuiUtil::BeginNewFrame()
 void ImGuiUtil::EndFrame()
 {
 	ImGuiIO &io = ImGui::GetIO();
-	io.DisplaySize = ImVec2(Application::Instance()->GetMainViewportSize().x, Application::Instance()->GetMainViewportSize().y);
+	io.DisplaySize = ImVec2 {
+		(float) Application::Instance()->GetMainViewportSize().x,
+		(float) Application::Instance()->GetMainViewportSize().y };
 
 	// Rendering
 	ImGui::Render();

@@ -1,7 +1,6 @@
 #include "Application.h"
 
 #include <assert.h>
-#include <vector>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -18,15 +17,17 @@ Application::Application()
 
 	assert(glfwInit());
 	LOG_INFO("Creating Window: 1280, 720");
-	m_Window = glfwCreateWindow(1280, 720, "Window", nullptr, nullptr);
+	m_Window = glfwCreateWindow(1280, 720, "Mandelbrot set", nullptr, nullptr);
 	glfwMakeContextCurrent(m_Window);
 
     glfwSetScrollCallback(m_Window, [](GLFWwindow *window, double xOffset, double yOffset)
-        { Instance()->OnMouseScrolled((float) xOffset, (float) yOffset); });
+        { Instance()->OnMouseScrolled(xOffset, yOffset); });
+
     glfwSetFramebufferSizeCallback(m_Window, [](GLFWwindow *window, int sizeX, int sizeY)
         { Instance()->OnResize((u32) sizeX, (u32) sizeY); });
+
     glfwSetCursorPosCallback(m_Window, [](GLFWwindow *window, double xOffset, double yOffset)
-        { Instance()->OnMouseMoved((float) xOffset, (float) yOffset); });
+        { Instance()->OnMouseMoved(xOffset, yOffset); });
 
 	assert(gladLoadGLLoader((GLADloadproc) glfwGetProcAddress));
 	glViewport(0, 0, 1280, 720);
@@ -51,14 +52,6 @@ void Application::Run()
         glfwSwapBuffers(m_Window);
         glfwPollEvents();
 
-        dvec2 mouseOffset = { 
-            GetMousePosition().x - m_LastMousePosition.x, 
-            GetMousePosition().y - m_LastMousePosition.y };
-        float deltaTime = (float) glfwGetTime() - m_LastFrame;
-
-        m_LastMousePosition = GetMousePosition();
-        m_LastFrame = glfwGetTime();
-
 	    glClearColor(0.7f, 0.7f, 0.7f, 0.7f);
 	    glClear(GL_COLOR_BUFFER_BIT);
 
@@ -74,7 +67,7 @@ void Application::Run()
 
         ImGui::Begin("Hello World");
         ImGui::Text("FPS: %.2f", ImGui::GetIO().Framerate);
-        ImGui::SliderInt("u_MaxIterations", &m_MaxIterations, 0, 1000);
+        ImGui::SliderInt("u_MaxIterations", &m_MaxIterations, 0, 500);
         ImGui::ColorEdit4("Color", &m_Color.x);
         ImGui::End();
 
@@ -82,24 +75,28 @@ void Application::Run()
 	}
 }
 
-void Application::OnMouseScrolled(float xOffset, float yOffset)
+void Application::OnMouseScrolled(double xOffset, double yOffset)
 {
     if(!m_BlockMouseEvents)
-        m_ZoomLevel += yOffset * zoomSpeed * m_ZoomLevel / 10.0f;
+        m_ZoomLevel += yOffset * ZoomSpeed * m_ZoomLevel / 10.0f;
   
-    if (m_ZoomLevel < minZoomLevel)
-        m_ZoomLevel = minZoomLevel;
+    if (m_ZoomLevel < MinZoomLevel)
+        m_ZoomLevel = MinZoomLevel;
+    if (m_ZoomLevel > MaxZoomLevel)
+        m_ZoomLevel = MaxZoomLevel;
 }
-void Application::OnMouseMoved(float xOffset, float yOffset)
+void Application::OnMouseMoved(double xPosition, double yPosition)
 {
-    vec2 offset = { m_LastMousePosition.x - xOffset,
-                    yOffset - m_LastMousePosition.y };
+    dvec2 offset = { m_LastMousePosition.x - xPosition,
+                     yPosition - m_LastMousePosition.y };
+
+    m_LastMousePosition = dvec2 { xPosition, yPosition };
 
     if (glfwGetMouseButton(m_Window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS && 
         !m_BlockMouseEvents)
     {
-        m_CameraPosition.x-= offset.x / m_ZoomLevel;
-        m_CameraPosition.y-= offset.y / m_ZoomLevel;
+        m_CameraPosition.x -= offset.x / m_ZoomLevel;
+        m_CameraPosition.y -= offset.y / m_ZoomLevel;
     }
 }
 void Application::OnResize(u32 width, u32 height)
@@ -120,12 +117,6 @@ dvec2 Application::GetMainViewportSize()
     glfwGetWindowSize(m_Window, &width, &height);
 
     return dvec2 { (double) width, (double) height };
-}
-
-Application *Application::Instance()
-{
-	assert(s_Instance);
-	return s_Instance;
 }
 
 void Application::RenderFullscreenQuad()
@@ -160,8 +151,14 @@ void Application::RenderFullscreenQuad()
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
     }
-    
+
     glBindVertexArray(VertexArray);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
     glBindVertexArray(0);
+}
+
+Application *Application::Instance()
+{
+	assert(s_Instance);
+	return s_Instance;
 }

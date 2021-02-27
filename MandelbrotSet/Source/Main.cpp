@@ -1,7 +1,7 @@
 #include "Application.h"
 
 
-int main()
+int main(int argc, char **argv)
 {
 	auto *App = new Application();
 	App->Run();

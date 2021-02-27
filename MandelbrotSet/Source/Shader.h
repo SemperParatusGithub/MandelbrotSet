@@ -7,10 +7,10 @@ class Shader
 {
 public:
 	Shader() = default;
-	Shader(const string &filepath);
+	Shader(const std::string &filepath);
 	~Shader();
 
-	void Load(const string &filepath);
+	void Load(const std::string &filepath);
 
 	void Bind() const;
 	void UnBind() const;
@@ -33,10 +33,10 @@ public:
 
 
 private:
-	std::pair<string, string> LoadShaderFromFile(const string &filepath);
+	std::pair<std::string, std::string> LoadShaderFromFile(const std::string &filepath);
 
 	u32 CreateShader(const std::string &vertexShader, const std::string &fragmentShader);
-	u32 TryCompileShader(u32 shaderType, const string &shaderSource, string &errorLog);
+	u32 TryCompileShader(u32 shaderType, const std::string &shaderSource, std::string &errorLog);
 
 private:
 	u32 m_ShaderHandle = 0;
