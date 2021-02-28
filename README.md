@@ -49,8 +49,6 @@ If you want to know more about the Mandelbrot set: https://en.wikipedia.org/wiki
 ## License
 This project is under the MIT license. For full license text see LICENCE.txt
 
-    premake5 <project-type>
-    
     
 ## Third Party Libraries
 * [Premake5](https://premake.github.io/) as a build system
