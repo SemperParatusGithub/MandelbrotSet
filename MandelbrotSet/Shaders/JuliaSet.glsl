@@ -17,19 +17,20 @@ uniform dvec2 u_ScreenSize;
 uniform double u_Zoom;
 uniform dvec2 u_Offset;
 uniform vec4 u_Color;
+uniform float u_RealComponent;
+uniform float u_ImaginaryComponent;
 
-float Mandelbrot(dvec2 fragCoord)
+float JuliaSet(dvec2 c)
 {
 	int n = 0;
-	dvec2 z = vec2(0.0, 0.0);
+	dvec2 z = c;
 	for (n = 0; n < u_MaxIterations; n++)
 	{
 		dvec2 znew;
-		znew.x = (z.x * z.x) - (z.y * z.y) + fragCoord.x;
-		znew.y = (2.0 * z.x * z.y) + fragCoord.y;
+		znew.x = (z.x * z.x) - (z.y * z.y) + u_RealComponent;
+		znew.y = (2.0 * z.x * z.y) + u_ImaginaryComponent;
 		z = znew;
-		if ((z.x * z.x) + (z.y * z.y) > 16.0)
-			break;
+		if ((z.x * z.x) + (z.y * z.y) > 16.0) break;
 	}
 	return n / float(u_MaxIterations);
 }
@@ -46,7 +47,7 @@ vec3 MapToColor(float v)
 
 void main()
 {
-	float pixelValue = Mandelbrot(((gl_FragCoord.xy - u_ScreenSize / 2) / u_Zoom) - u_Offset);
+	float pixelValue = JuliaSet(((gl_FragCoord.xy - u_ScreenSize / 2) / u_Zoom) - u_Offset);
 	vec3 color = MapToColor(pixelValue);
 	o_Color = vec4(color, 1.0);
 }

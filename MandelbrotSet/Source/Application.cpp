@@ -36,6 +36,7 @@ Application::Application()
 	glViewport(0, 0, 1280, 720);
 
     m_MandelbrotShader.Load("Shaders/Mandelbrot.glsl");
+    m_JuliaSetShader.Load("Shaders/JuliaSet.glsl");
 
     ImGuiUtil::CreateContext();
 }
@@ -58,18 +59,27 @@ void Application::Run()
 	    glClearColor(0.7f, 0.7f, 0.7f, 0.7f);
 	    glClear(GL_COLOR_BUFFER_BIT);
 
-        m_MandelbrotShader.Bind();
-        m_MandelbrotShader.SetInt("u_MaxIterations", m_MaxIterations);
-        m_MandelbrotShader.SetDouble2("u_ScreenSize", GetMainViewportSize());
-        m_MandelbrotShader.SetDouble("u_Zoom", m_ZoomLevel);
-        m_MandelbrotShader.SetDouble2("u_Offset", m_CameraPosition);
-        m_MandelbrotShader.SetFloat4("u_Color", m_Color);
+        auto &shader = currentItem == 0 ? m_MandelbrotShader : m_JuliaSetShader;
+
+        shader.Bind();
+        shader.SetInt("u_MaxIterations", m_MaxIterations);
+        shader.SetDouble2("u_ScreenSize", GetMainViewportSize());
+        shader.SetDouble("u_Zoom", m_ZoomLevel);
+        shader.SetDouble2("u_Offset", m_CameraPosition);
+        shader.SetFloat4("u_Color", m_Color);
+        if (currentItem == 1)   // Julia Set
+        {
+            shader.SetFloat("u_RealComponent", m_RealComponent);
+            shader.SetFloat("u_ImaginaryComponent", m_ImaginaryComponent);
+        }
         RenderFullscreenQuad();
 
         m_BlockMouseEvents = ImGui::GetIO().WantCaptureMouse;
 
         ImGui::Begin("Settings");
         ImGui::Text("FPS: %.2f", ImGui::GetIO().Framerate);
+
+        ImGui::Combo("Current Fractal", &currentItem, items);
 
         ImGui::Text("Max Iterations");
         ImGui::SetNextItemWidth(-1.0f);
@@ -78,6 +88,18 @@ void Application::Run()
         ImGui::Text("Color");
         ImGui::SetNextItemWidth(-1.0f);
         ImGui::ColorEdit4("##color", &m_Color.x);
+
+        if (currentItem == 1)
+        {
+            ImGui::Spacing();
+            ImGui::Text("RealComponent");
+            ImGui::SetNextItemWidth(-1.0f);
+            ImGui::SliderFloat("##RealComponent", &m_RealComponent, 0.0f, 1.0f);
+
+            ImGui::Text("ImaginaryComponent");
+            ImGui::SetNextItemWidth(-1.0f);
+            ImGui::SliderFloat("##ImaginaryComponent", &m_ImaginaryComponent, 0.0f, 1.0f);
+        }
 
         ImGui::Spacing();
         if (ImGui::Button("Take Screenshot"))

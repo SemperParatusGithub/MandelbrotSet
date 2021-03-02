@@ -40,6 +40,7 @@ private:
 private:
 	GLFWwindow *m_Window;
 	Shader m_MandelbrotShader;
+	Shader m_JuliaSetShader;
 
 	dvec2 m_LastMousePosition = { 0.0, 0.0 };
 	bool m_BlockMouseEvents = false;
@@ -48,6 +49,11 @@ private:
 	double m_ZoomLevel = 200.0f;
 	dvec2 m_CameraPosition = { 0.0, 0.0 };
 	vec4 m_Color = { 0.5f, 1.0f, 0.7f };
+	float m_RealComponent = 0.0f;
+	float m_ImaginaryComponent = 0.0f;
+
+	int currentItem = 0;
+	const char *items = "Mandelbrot set\0Julia set";
 
 private:
 	friend class ImGuiUtil;
