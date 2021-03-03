@@ -31,7 +31,7 @@ private:
 
 	static void RenderFullscreenQuad();
 
-	void TakeScreenShot(const std::string &filepath);
+	void TakeScreenShot();
 
 private:
 	static Application *s_Instance;

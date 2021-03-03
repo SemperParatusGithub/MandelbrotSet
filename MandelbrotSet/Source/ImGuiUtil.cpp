@@ -56,7 +56,7 @@ void ImGuiUtil::CreateContext()
 	colors[ImGuiCol_TitleBgActive] = ImVec4 { 0.15f, 0.1505f, 0.151f, 1.0f };
 	colors[ImGuiCol_TitleBgCollapsed] = ImVec4 { 0.15f, 0.1505f, 0.151f, 1.0f };
 
-	ImFont *font = io.Fonts->AddFontFromFileTTF("Fonts/OpenSans.ttf", 32);
+	ImFont *font = io.Fonts->AddFontFromFileTTF("Fonts/OpenSans.ttf", 28.0f);
 	io.FontDefault = font;
 	ImGui::GetStyle().WindowMinSize = ImVec2(350.0f, 300.0f);
 

@@ -79,7 +79,8 @@ void Application::Run()
         ImGui::Begin("Settings");
         ImGui::Text("FPS: %.2f", ImGui::GetIO().Framerate);
 
-        ImGui::Combo("Current Fractal", &currentItem, items);
+        ImGui::SetNextItemWidth(-1.0f);
+        ImGui::Combo("##Current Fractal", &currentItem, items);
 
         ImGui::Text("Max Iterations");
         ImGui::SetNextItemWidth(-1.0f);
@@ -103,7 +104,7 @@ void Application::Run()
 
         ImGui::Spacing();
         if (ImGui::Button("Take Screenshot"))
-            TakeScreenShot("test.png");
+            TakeScreenShot();
         ImGui::End();
 
         ImGuiUtil::EndFrame();
@@ -192,7 +193,7 @@ void Application::RenderFullscreenQuad()
     glBindVertexArray(0);
 }
 
-void Application::TakeScreenShot(const std::string &filepath)
+void Application::TakeScreenShot()
 {
     GLint viewport[4];
     glGetIntegerv(GL_VIEWPORT, viewport);
