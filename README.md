@@ -43,7 +43,9 @@ If you want to know more about the Mandelbrot set: https://en.wikipedia.org/wiki
 ![Screenshot2](/MandelbrotSet/Screenshot2.png?raw=true) <br>
 ![Screenshot3](/MandelbrotSet/Screenshot3.png?raw=true) <br>
 ![Screenshot4](/MandelbrotSet/Screenshot4.png?raw=true) <br>
-![Screenshot4](/MandelbrotSet/Screenshot5.png?raw=true) <br>
+![Screenshot5](/MandelbrotSet/Screenshot5.png?raw=true) <br>
+![Screenshot6](/MandelbrotSet/Screenshot6.png?raw=true) <br>
+![Screenshot7](/MandelbrotSet/Screenshot7.png?raw=true) <br>
 
 
 ## License
