@@ -32,6 +32,7 @@ Application::Application()
     glfwSetCursorPosCallback(m_Window, [](GLFWwindow *window, double xOffset, double yOffset)
         { Instance()->OnMouseMoved(xOffset, yOffset); });
 
+
 	assert(gladLoadGLLoader((GLADloadproc) glfwGetProcAddress));
 	glViewport(0, 0, 1280, 720);
 
@@ -39,6 +40,13 @@ Application::Application()
     m_JuliaSetShader.Load("Shaders/JuliaSet.glsl");
 
     ImGuiUtil::CreateContext();
+
+    HWND window = GetConsoleWindow();
+#ifdef _DEBUG
+    ShowWindow(window, 1);
+#else
+    ShowWindow(window, 0);
+#endif
 }
 
 Application::~Application()
@@ -49,6 +57,8 @@ Application::~Application()
 
 void Application::Run()
 {
+    glfwMaximizeWindow(m_Window);
+
     while (!glfwWindowShouldClose(m_Window))
     {
         ImGuiUtil::BeginNewFrame();
