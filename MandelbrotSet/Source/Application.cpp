@@ -3,8 +3,8 @@
 #include <cassert>
 #include <cstdio>
 #include <cstdlib>
-#include <sstream>
-#include <time.h>
+#include <ctime>
+#include <vector>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -294,34 +294,35 @@ void Application::RenderFullscreenQuad()
 
 void Application::TakeScreenShot()
 {
-    GLint viewport[4];
-    glGetIntegerv(GL_VIEWPORT, viewport);
-
     const dvec2 fb = GetFramebufferSize();
-    std::size_t width  = (std::size_t) fb.x;
-    std::size_t height = (std::size_t) fb.y;
+    const int width  = (int) fb.x;
+    const int height = (int) fb.y;
 
-    char *data = new char[width * height * 3];
+    std::vector<unsigned char> data((size_t) width * (size_t) height * 3u);
 
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
-    glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glReadPixels(0, 0, width, height, GL_RGB, GL_UNSIGNED_BYTE, data.data());
 
-    time_t theTime = time(nullptr);
-    struct tm *aTime = localtime(&theTime);
+    // OpenGL reads bottom-up; PNG expects top-down.
+    stbi_flip_vertically_on_write(1);
 
-    std::stringstream name;
+    const time_t theTime = time(nullptr);
+    const struct tm *aTime = localtime(&theTime);
 
-    name << "Screenshot_";
-    name << aTime->tm_year + 1900 << "-" << aTime->tm_mon + 1 << "-" << aTime->tm_mday << "_";
-    name << aTime->tm_hour << "-" << aTime->tm_min << "-" << aTime->tm_sec;
-    name << ".png";
+    char name[64];
+    std::snprintf(name, sizeof(name),
+        "Screenshot_%04d-%02d-%02d_%02d-%02d-%02d.png",
+        aTime->tm_year + 1900,
+        aTime->tm_mon + 1,
+        aTime->tm_mday,
+        aTime->tm_hour,
+        aTime->tm_min,
+        aTime->tm_sec);
 
-    if (!stbi_write_png(name.str().c_str(), (int) width, (int) height, 3, data, 0))
-        std::fprintf(stderr, "[ERROR] Failed to write screenshot: %s\n", name.str().c_str());
+    if (!stbi_write_png(name, width, height, 3, data.data(), 0))
+        std::fprintf(stderr, "[ERROR] Failed to write screenshot: %s\n", name);
     else
-        LOG_INFO("Saved Screenshot: %s", name.str().c_str());
-
-    delete[] data;
+        LOG_INFO("Saved Screenshot: %s", name);
 }
 
 Application *Application::Instance()
