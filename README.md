@@ -81,7 +81,7 @@ When working inside Visual Studio or Xcode, F5/Run uses
 `MandelbrotSet/` as the working directory automatically.
 
 ## License
-This project is under the MIT license. For full license text see LICENCE.txt
+This project is under the MIT license. For full license text see [LICENSE.txt](LICENSE.txt).
 
 
 ## Third Party Libraries
