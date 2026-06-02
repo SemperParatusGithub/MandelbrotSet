@@ -76,8 +76,14 @@ Application::Application()
 
 Application::~Application()
 {
+    if (m_QuadEBO) glDeleteBuffers(1, &m_QuadEBO);
+    if (m_QuadVBO) glDeleteBuffers(1, &m_QuadVBO);
+    if (m_QuadVAO) glDeleteVertexArrays(1, &m_QuadVAO);
+
     ImGuiUtil::DestroyContext();
-	glfwTerminate();
+    glfwTerminate();
+
+    s_Instance = nullptr;
 }
 
 void Application::Run()
@@ -254,11 +260,7 @@ dvec2 Application::GetFramebufferSize()
 
 void Application::RenderFullscreenQuad()
 {
-    static u32 VertexArray = 0;
-    static u32 VertexBuffer = 0, IndexBuffer = 0;
-
-    // prepare pipeline
-    if (VertexArray == 0)
+    if (m_QuadVAO == 0)
     {
         constexpr float vertices[] = {
             -1.0f, -1.0f, 0.0f,
@@ -272,22 +274,22 @@ void Application::RenderFullscreenQuad()
 
         // glCreateBuffers / glCreateVertexArrays are DSA (GL 4.5+) and unavailable
         // on a 3.3 core context, so use the legacy bind-to-edit form.
-        glGenVertexArrays(1, &VertexArray);
-        glBindVertexArray(VertexArray);
+        glGenVertexArrays(1, &m_QuadVAO);
+        glBindVertexArray(m_QuadVAO);
 
-        glGenBuffers(1, &VertexBuffer);
-        glBindBuffer(GL_ARRAY_BUFFER, VertexBuffer);
+        glGenBuffers(1, &m_QuadVBO);
+        glBindBuffer(GL_ARRAY_BUFFER, m_QuadVBO);
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-        glGenBuffers(1, &IndexBuffer);
-        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndexBuffer);
+        glGenBuffers(1, &m_QuadEBO);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_QuadEBO);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
         glEnableVertexAttribArray(0);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);
     }
 
-    glBindVertexArray(VertexArray);
+    glBindVertexArray(m_QuadVAO);
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
     glBindVertexArray(0);
 }

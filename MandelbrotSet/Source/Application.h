@@ -18,16 +18,19 @@ static const double ZoomSpeed = 1.0f;
 static const double MovementSpeed = 0.5f;
 
 struct GLFWwindow;
-int main(int argc, char **argv);
 
 class Application
 {
-private:
+public:
 	Application();
 	~Application();
 
+	Application(const Application &) = delete;
+	Application &operator=(const Application &) = delete;
+
 	void Run();
 
+private:
 	void OnMouseScrolled(double xOffset, double yOffset);
 	void OnMouseMoved(double xPosition, double yPosition);
 	void OnResize(u32 width, u32 height);
@@ -38,7 +41,7 @@ private:
 	dvec2 GetMainViewportSize();   // logical points (for ImGui)
 	dvec2 GetFramebufferSize();    // physical pixels (for GL / gl_FragCoord)
 
-	static void RenderFullscreenQuad();
+	void RenderFullscreenQuad();
 
 	void TakeScreenShot();
 
@@ -67,7 +70,11 @@ private:
 	int currentItem = 0;
 	const char *items = "Mandelbrot set\0Julia set";
 
+	// Fullscreen quad GL state (created lazily on first draw, deleted in dtor).
+	u32 m_QuadVAO = 0;
+	u32 m_QuadVBO = 0;
+	u32 m_QuadEBO = 0;
+
 private:
 	friend class ImGuiUtil;
-	friend int ::main(int argc, char **argv);
 };

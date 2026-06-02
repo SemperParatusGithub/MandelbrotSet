@@ -3,10 +3,9 @@
 
 int main(int argc, char **argv)
 {
-	auto *App = new Application();
-	App->Run();
+	(void) argc; (void) argv;
 
-	delete App;
-
+	Application app;
+	app.Run();
 	return 0;
 }
