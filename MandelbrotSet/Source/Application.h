@@ -52,6 +52,7 @@ private:
 	Shader m_JuliaSetShader;
 
 	dvec2 m_LastMousePosition = { 0.0, 0.0 };
+	bool m_HasLastMousePosition = false;
 	bool m_BlockMouseEvents = false;
 
 	int m_MaxIterations = 100;

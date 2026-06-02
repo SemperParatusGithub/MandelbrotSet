@@ -80,11 +80,10 @@ void ImGuiUtil::BeginNewFrame()
 void ImGuiUtil::EndFrame()
 {
 	ImGuiIO &io = ImGui::GetIO();
-	io.DisplaySize = ImVec2 {
-		(float) Application::Instance()->GetMainViewportSize().x,
-		(float) Application::Instance()->GetMainViewportSize().y };
 
-	// Rendering
+	// io.DisplaySize was already populated by ImGui_ImplGlfw_NewFrame in
+	// BeginNewFrame() and is the authoritative value for this frame; don't
+	// stomp it after layout has already happened.
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 

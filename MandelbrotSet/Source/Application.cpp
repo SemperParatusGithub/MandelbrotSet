@@ -86,15 +86,19 @@ void Application::Run()
 
     while (!glfwWindowShouldClose(m_Window))
     {
-        ImGuiUtil::BeginNewFrame();
-
-        glfwSwapBuffers(m_Window);
+        // 1. Pump events first so the per-frame state is fresh before anything
+        //    reads from it. Capture flags are sampled here too, so the GLFW
+        //    callbacks dispatched inside glfwPollEvents see the up-to-date
+        //    values rather than the previous frame's.
         glfwPollEvents();
+        m_BlockMouseEvents = ImGui::GetIO().WantCaptureMouse;
 
+        ImGuiUtil::BeginNewFrame();
         ProcessKeyboardInput(ImGui::GetIO().DeltaTime);
 
-	    glClearColor(0.7f, 0.7f, 0.7f, 0.7f);
-	    glClear(GL_COLOR_BUFFER_BIT);
+        // 2. Render the fractal.
+        glClearColor(0.7f, 0.7f, 0.7f, 0.7f);
+        glClear(GL_COLOR_BUFFER_BIT);
 
         auto &shader = currentItem == 0 ? m_MandelbrotShader : m_JuliaSetShader;
 
@@ -113,8 +117,7 @@ void Application::Run()
         }
         RenderFullscreenQuad();
 
-        m_BlockMouseEvents = ImGui::GetIO().WantCaptureMouse;
-
+        // 3. ImGui UI on top.
         ImGui::Begin("Settings");
         ImGui::Text("FPS: %.2f", ImGui::GetIO().Framerate);
 
@@ -152,7 +155,12 @@ void Application::Run()
         ImGui::End();
 
         ImGuiUtil::EndFrame();
-	}
+
+        // 4. Present. Last call in the loop, conventional ordering: rendering
+        //    is no longer one frame behind events and the very first swap is
+        //    no longer of an uninitialized backbuffer.
+        glfwSwapBuffers(m_Window);
+    }
 }
 
 void Application::OnMouseScrolled(double xOffset, double yOffset)
@@ -167,12 +175,21 @@ void Application::OnMouseScrolled(double xOffset, double yOffset)
 }
 void Application::OnMouseMoved(double xPosition, double yPosition)
 {
+    // First-event guard: m_LastMousePosition starts at (0, 0) which can be
+    // far from the actual cursor location, producing a one-frame jump.
+    if (!m_HasLastMousePosition)
+    {
+        m_LastMousePosition = dvec2 { xPosition, yPosition };
+        m_HasLastMousePosition = true;
+        return;
+    }
+
     dvec2 offset = { m_LastMousePosition.x - xPosition,
                      yPosition - m_LastMousePosition.y };
 
     m_LastMousePosition = dvec2 { xPosition, yPosition };
 
-    if (glfwGetMouseButton(m_Window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS && 
+    if (glfwGetMouseButton(m_Window, GLFW_MOUSE_BUTTON_1) == GLFW_PRESS &&
         !m_BlockMouseEvents)
     {
         m_CameraPosition.x -= offset.x / m_ZoomLevel;
