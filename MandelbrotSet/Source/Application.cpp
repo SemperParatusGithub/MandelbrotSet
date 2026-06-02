@@ -76,12 +76,14 @@ void Application::Run()
         glfwSwapBuffers(m_Window);
         glfwPollEvents();
 
+        ProcessKeyboardInput(ImGui::GetIO().DeltaTime);
+
 	    glClearColor(0.7f, 0.7f, 0.7f, 0.7f);
 	    glClear(GL_COLOR_BUFFER_BIT);
 
         auto &shader = currentItem == 0 ? m_MandelbrotShader : m_JuliaSetShader;
 
-        const dvec2 viewport = GetMainViewportSize();
+        const dvec2 viewport = GetFramebufferSize();
 
         shader.Bind();
         shader.SetInt("u_MaxIterations", m_MaxIterations);
@@ -127,6 +129,11 @@ void Application::Run()
         ImGui::Spacing();
         if (ImGui::Button("Take Screenshot"))
             TakeScreenShot();
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::TextDisabled("WASD / drag : pan");
+        ImGui::TextDisabled("Scroll      : zoom");
         ImGui::End();
 
         ImGuiUtil::EndFrame();
@@ -162,6 +169,31 @@ void Application::OnResize(u32 width, u32 height)
     glViewport(0, 0, width, height);
 }
 
+void Application::ProcessKeyboardInput(double dt)
+{
+    // Skip when an ImGui widget owns the keyboard (text input, slider in
+    // keyboard-nav mode, etc.) so typing doesn't pan the view.
+    if (ImGui::GetIO().WantCaptureKeyboard)
+        return;
+
+    // MovementSpeed is interpreted as "screens per second" of pan, so the
+    // perceived speed stays constant at every zoom level.
+    const dvec2 viewport = GetFramebufferSize();
+    const double pan = MovementSpeed * dt / m_ZoomLevel;
+
+    // m_CameraPosition is subtracted from the per-pixel world coord in the
+    // shader, so to move the *view* in a direction we move m_CameraPosition
+    // the opposite way.
+    if (glfwGetKey(m_Window, GLFW_KEY_W) == GLFW_PRESS)
+        m_CameraPosition.y -= pan * viewport.y;
+    if (glfwGetKey(m_Window, GLFW_KEY_S) == GLFW_PRESS)
+        m_CameraPosition.y += pan * viewport.y;
+    if (glfwGetKey(m_Window, GLFW_KEY_A) == GLFW_PRESS)
+        m_CameraPosition.x += pan * viewport.x;
+    if (glfwGetKey(m_Window, GLFW_KEY_D) == GLFW_PRESS)
+        m_CameraPosition.x -= pan * viewport.x;
+}
+
 dvec2 Application::GetMousePosition()
 {
     double xPos, yPos;
@@ -173,6 +205,17 @@ dvec2 Application::GetMainViewportSize()
 {
     int width, height;
     glfwGetWindowSize(m_Window, &width, &height);
+
+    return dvec2 { (double) width, (double) height };
+}
+dvec2 Application::GetFramebufferSize()
+{
+    // gl_FragCoord and glViewport operate in framebuffer pixels, so anything
+    // touching the GL pipeline (u_ScreenSize, glReadPixels, pan-speed scaling)
+    // must use this rather than glfwGetWindowSize -- on HiDPI displays they
+    // differ by the DPI scale factor.
+    int width, height;
+    glfwGetFramebufferSize(m_Window, &width, &height);
 
     return dvec2 { (double) width, (double) height };
 }
@@ -222,8 +265,9 @@ void Application::TakeScreenShot()
     GLint viewport[4];
     glGetIntegerv(GL_VIEWPORT, viewport);
 
-    std::size_t width = (std::size_t) GetMainViewportSize().x;
-    std::size_t height = (std::size_t) GetMainViewportSize().y;
+    const dvec2 fb = GetFramebufferSize();
+    std::size_t width  = (std::size_t) fb.x;
+    std::size_t height = (std::size_t) fb.y;
 
     char *data = new char[width * height * 3];
 

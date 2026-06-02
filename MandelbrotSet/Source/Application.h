@@ -32,8 +32,11 @@ private:
 	void OnMouseMoved(double xPosition, double yPosition);
 	void OnResize(u32 width, u32 height);
 
+	void ProcessKeyboardInput(double dt);
+
 	dvec2 GetMousePosition();
-	dvec2 GetMainViewportSize();
+	dvec2 GetMainViewportSize();   // logical points (for ImGui)
+	dvec2 GetFramebufferSize();    // physical pixels (for GL / gl_FragCoord)
 
 	static void RenderFullscreenQuad();
 
