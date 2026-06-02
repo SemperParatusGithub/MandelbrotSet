@@ -1,6 +1,8 @@
 #include "Application.h"
 
-#include <assert.h>
+#include <cassert>
+#include <cstdio>
+#include <cstdlib>
 #include <sstream>
 #include <time.h>
 
@@ -11,14 +13,24 @@
 #include <stb_image_write.h>
 
 
+namespace
+{
+	[[noreturn]] void FatalExit(const char *what)
+	{
+		std::fprintf(stderr, "[FATAL] %s\n", what);
+		std::exit(EXIT_FAILURE);
+	}
+}
+
 Application *Application::s_Instance = nullptr;
 
 Application::Application()
 {
-	assert(s_Instance == nullptr);
+	assert(s_Instance == nullptr && "Application already constructed");
 	s_Instance = this;
 
-	assert(glfwInit());
+	if (!glfwInit())
+		FatalExit("glfwInit() failed");
 
 	// Request an OpenGL 3.3 Core Profile context. Forward-compat is
 	// required on macOS, harmless on Windows/Linux.
@@ -29,6 +41,8 @@ Application::Application()
 
 	LOG_INFO("Creating Window: 1280, 720");
 	m_Window = glfwCreateWindow(1280, 720, "Mandelbrot set", nullptr, nullptr);
+	if (!m_Window)
+		FatalExit("glfwCreateWindow() failed -- driver does not support OpenGL 3.3 Core?");
 	glfwMakeContextCurrent(m_Window);
 
     glfwSetScrollCallback(m_Window, [](GLFWwindow *window, double xOffset, double yOffset)
@@ -41,7 +55,8 @@ Application::Application()
         { Instance()->OnMouseMoved(xOffset, yOffset); });
 
 
-	assert(gladLoadGLLoader((GLADloadproc) glfwGetProcAddress));
+	if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress))
+		FatalExit("gladLoadGLLoader() failed -- could not load OpenGL function pointers");
 	glViewport(0, 0, 1280, 720);
 
     m_MandelbrotShader.Load("Shaders/Mandelbrot.glsl");
@@ -284,10 +299,12 @@ void Application::TakeScreenShot()
     name << aTime->tm_hour << "-" << aTime->tm_min << "-" << aTime->tm_sec;
     name << ".png";
 
-    assert(stbi_write_png(name.str().c_str(), width, height, 3, data, 0));
-    delete[] data;
+    if (!stbi_write_png(name.str().c_str(), (int) width, (int) height, 3, data, 0))
+        std::fprintf(stderr, "[ERROR] Failed to write screenshot: %s\n", name.str().c_str());
+    else
+        LOG_INFO("Saved Screenshot: %s", name.str().c_str());
 
-    LOG_INFO("Saved Screenshot: %s", name.str().c_str());
+    delete[] data;
 }
 
 Application *Application::Instance()
