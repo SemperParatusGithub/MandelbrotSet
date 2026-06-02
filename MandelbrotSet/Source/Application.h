@@ -12,7 +12,7 @@
 // visible pixelation at maximum zoom. Switch to perturbation theory for
 // deeper zoom — see README.
 static const double MaxZoomLevel = 5.0e6;
-static const double MinZoomLevel = 200;
+static const double MinZoomLevel = 100;
 
 static const double ZoomSpeed = 1.0f;
 static const double MovementSpeed = 0.5f;
@@ -59,7 +59,12 @@ private:
 	bool m_BlockMouseEvents = false;
 
 	int m_MaxIterations = 100;
-	double m_ZoomLevel = 200.0f;
+	// Initial zoom is in framebuffer pixels per world unit. 400 produces a
+	// "fits the window" view at the default 1280x720 logical size on both
+	// 1x and 2x DPI displays (since u_ScreenSize is now framebuffer-pixel
+	// based, raising it from 200 keeps Retina users from getting a
+	// half-zoomed default).
+	double m_ZoomLevel = 400.0;
 	dvec2 m_CameraPosition = { 0.0, 0.0 };
 	// Alpha is unused by the shader but kept = 1 so the uniform value is
 	// always sane if any future shader does sample u_Color.w.
