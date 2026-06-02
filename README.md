@@ -48,12 +48,43 @@ If you want to know more about the Mandelbrot set: https://en.wikipedia.org/wiki
 ![Screenshot7](/MandelbrotSet/Screenshot7.png?raw=true) <br>
 
 
+## Building
+
+The project uses [CMake](https://cmake.org/) (3.16+) and a C++17 compiler.
+All third-party dependencies are vendored under `MandelbrotSet/External/`, so no
+package installation is required beyond the OS development packages listed
+below.
+
+### Linux prerequisites
+
+GLFW links against X11; install the corresponding `-dev` packages, e.g. on
+Debian/Ubuntu:
+
+```
+sudo apt install build-essential libx11-dev libxrandr-dev libxinerama-dev \
+                 libxcursor-dev libxi-dev libgl1-mesa-dev
+```
+
+### Configure & build
+
+```
+cmake -S . -B build
+cmake --build build --config Release -j
+```
+
+This produces the executable at
+`Binaries/Release-<system>-<arch>/MandelbrotSet[.exe]`. The `Shaders/` and
+`Fonts/` directories are copied next to the binary as a post-build step, so
+the executable can be launched directly from the output directory.
+
+When working inside Visual Studio or Xcode, F5/Run uses
+`MandelbrotSet/` as the working directory automatically.
+
 ## License
 This project is under the MIT license. For full license text see LICENCE.txt
 
-    
+
 ## Third Party Libraries
-* [Premake5](https://premake.github.io/) as a build system
 * [GLFW](https://www.glfw.org/) for window creation and events
 * [Glad](https://glad.dav1d.de/) as OpenGL loader
 * [ImGui](https://github.com/ocornut/imgui) for UI

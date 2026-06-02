@@ -41,11 +41,13 @@ Application::Application()
 
     ImGuiUtil::CreateContext();
 
+#ifdef _WIN32
     HWND window = GetConsoleWindow();
 #ifdef _DEBUG
     ShowWindow(window, 1);
 #else
     ShowWindow(window, 0);
+#endif
 #endif
 }
 
