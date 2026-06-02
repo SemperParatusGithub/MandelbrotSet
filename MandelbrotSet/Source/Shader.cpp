@@ -3,7 +3,8 @@
 #include <string>
 #include <sstream>
 #include <fstream>
-#include <assert.h>
+#include <utility>
+#include <vector>
 
 #include <glad/glad.h>
 
@@ -14,12 +15,38 @@ Shader::Shader(const std::string &filepath)
 }
 Shader::~Shader()
 {
-	glDeleteProgram(m_ShaderHandle);
+	if (m_ShaderHandle != 0)
+		glDeleteProgram(m_ShaderHandle);
+}
+
+Shader::Shader(Shader &&other) noexcept
+	: m_ShaderHandle(other.m_ShaderHandle)
+{
+	other.m_ShaderHandle = 0;
+}
+Shader &Shader::operator=(Shader &&other) noexcept
+{
+	if (this != &other)
+	{
+		if (m_ShaderHandle != 0)
+			glDeleteProgram(m_ShaderHandle);
+		m_ShaderHandle = other.m_ShaderHandle;
+		other.m_ShaderHandle = 0;
+	}
+	return *this;
 }
 
 void Shader::Load(const std::string &filepath)
 {
 	const auto [vertexSource, fragmentSource] = LoadShaderFromFile(filepath);
+	if (vertexSource.empty() || fragmentSource.empty())
+	{
+		LOG_ERROR("Refusing to compile shader '%s' (missing vertex or fragment stage)", filepath.c_str());
+		return;
+	}
+
+	if (m_ShaderHandle != 0)
+		glDeleteProgram(m_ShaderHandle);
 	m_ShaderHandle = CreateShader(vertexSource, fragmentSource);
 }
 
@@ -87,6 +114,11 @@ void Shader::SetDoubleArray(const char *name, double *values, u32 count)
 std::pair<std::string, std::string> Shader::LoadShaderFromFile(const std::string &filepath)
 {
 	std::ifstream stream(filepath);
+	if (!stream.is_open())
+	{
+		LOG_ERROR("Could not open shader file '%s'", filepath.c_str());
+		return { {}, {} };
+	}
 
 	enum class ShaderType
 	{
@@ -106,47 +138,67 @@ std::pair<std::string, std::string> Shader::LoadShaderFromFile(const std::string
 			else if (line.find("fragment") != std::string::npos)
 				type = ShaderType::FRAGMENT;
 		}
-		else
+		else if (type != ShaderType::NONE)
 		{
 			ss[(int) type] << line << "\n";
 		}
+		// Lines that appear before any `#shader` marker are silently ignored
+		// (so things like a leading BOM or comment can't UB into ss[-1]).
 	}
 	return { ss[(int) ShaderType::VERTEX].str(), ss[(int) ShaderType::FRAGMENT].str() };
 }
 
 u32 Shader::CreateShader(const std::string &vertexShader, const std::string &fragmentShader)
 {
-	u32 shaderProgram = glCreateProgram();
 	std::string errorLog;
 
 	u32 vertexProgram = TryCompileShader(GL_VERTEX_SHADER, vertexShader, errorLog);
-	
 	if (!vertexProgram)
 	{
 		LOG_ERROR("%s", errorLog.c_str());
-		assert(false);
+		return 0;
 	}
 
 	errorLog.clear();
-
 	u32 fragmentProgram = TryCompileShader(GL_FRAGMENT_SHADER, fragmentShader, errorLog);
 	if (!fragmentProgram)
 	{
 		LOG_ERROR("%s", errorLog.c_str());
-		assert(false);
+		glDeleteShader(vertexProgram);
+		return 0;
 	}
 
+	u32 shaderProgram = glCreateProgram();
 	glAttachShader(shaderProgram, vertexProgram);
 	glAttachShader(shaderProgram, fragmentProgram);
-
 	glLinkProgram(shaderProgram);
-	glValidateProgram(shaderProgram);
 
+	int linkStatus = 0;
+	glGetProgramiv(shaderProgram, GL_LINK_STATUS, &linkStatus);
+	if (!linkStatus)
+	{
+		int logLength = 0;
+		glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &logLength);
+		std::vector<char> message(logLength > 0 ? (size_t) logLength : 1, '\0');
+		glGetProgramInfoLog(shaderProgram, logLength, &logLength, message.data());
+		LOG_ERROR("Failed to link shader program:\n%s", message.data());
+
+		glDetachShader(shaderProgram, vertexProgram);
+		glDetachShader(shaderProgram, fragmentProgram);
+		glDeleteShader(vertexProgram);
+		glDeleteShader(fragmentProgram);
+		glDeleteProgram(shaderProgram);
+		return 0;
+	}
+
+	glDetachShader(shaderProgram, vertexProgram);
+	glDetachShader(shaderProgram, fragmentProgram);
 	glDeleteShader(vertexProgram);
 	glDeleteShader(fragmentProgram);
 
 	return shaderProgram;
 }
+
 u32 Shader::TryCompileShader(u32 shaderType, const std::string &shaderSource, std::string &errorLog)
 {
 	u32 shaderID = glCreateShader(shaderType);
@@ -155,22 +207,22 @@ u32 Shader::TryCompileShader(u32 shaderType, const std::string &shaderSource, st
 	glShaderSource(shaderID, 1, &src, nullptr);
 	glCompileShader(shaderID);
 
-	int result;
+	int result = 0;
 	glGetShaderiv(shaderID, GL_COMPILE_STATUS, &result);
 
 	if (!result)
 	{
-		int errorLength;
+		int errorLength = 0;
 		glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &errorLength);
 
-		char *message = new char[errorLength * sizeof(char)];
-		glGetShaderInfoLog(shaderID, errorLength, &errorLength, message);
+		std::vector<char> message(errorLength > 0 ? (size_t) errorLength : 1, '\0');
+		glGetShaderInfoLog(shaderID, errorLength, &errorLength, message.data());
 
-		errorLog = "Failed to compile" + std::string((shaderType == GL_VERTEX_SHADER) ? "vertex" : "fragment") +
-			" shader: \n" + std::string(message);
+		errorLog = std::string("Failed to compile ") +
+			((shaderType == GL_VERTEX_SHADER) ? "vertex" : "fragment") +
+			" shader:\n" + std::string(message.data());
 
-		glDeleteShader(shaderType);
-		delete[] message;
+		glDeleteShader(shaderID);
 		return 0;
 	}
 	return shaderID;

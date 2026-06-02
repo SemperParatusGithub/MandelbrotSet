@@ -7,8 +7,14 @@ class Shader
 {
 public:
 	Shader() = default;
-	Shader(const std::string &filepath);
+	explicit Shader(const std::string &filepath);
 	~Shader();
+
+	Shader(const Shader &) = delete;
+	Shader &operator=(const Shader &) = delete;
+
+	Shader(Shader &&other) noexcept;
+	Shader &operator=(Shader &&other) noexcept;
 
 	void Load(const std::string &filepath);
 
@@ -25,7 +31,7 @@ public:
 	void SetDouble3(const char *name, dvec3 values);
 	void SetDouble4(const char *name, dvec4 values);
 
-	virtual void SetInt(const char *name, int value);
+	void SetInt(const char *name, int value);
 
 	void SetIntArray(const char *name, int *values, u32 count);
 	void SetFloatArray(const char *name, float *values, u32 count);
