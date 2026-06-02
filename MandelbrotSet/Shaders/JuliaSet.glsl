@@ -40,8 +40,8 @@ vec3 MapToColor(float v)
 	float r = 10.0 * u_Color.x * (1.0 - v) * v * v * v;
 	float g = 10.0 * u_Color.y * (1.0 - v) * (1.0 - v) * v * v;
 	float b = 10.0 * u_Color.z * (1.0 - v) * (1.0 - v) * (1.0 - v) * v;
-	
-	return vec3(r, g, b);
+
+	return clamp(vec3(r, g, b), 0.0, 1.0);
 }
 
 

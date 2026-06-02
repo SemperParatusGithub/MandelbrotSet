@@ -58,7 +58,9 @@ private:
 	int m_MaxIterations = 100;
 	double m_ZoomLevel = 200.0f;
 	dvec2 m_CameraPosition = { 0.0, 0.0 };
-	vec4 m_Color = { 0.5f, 1.0f, 0.7f };
+	// Alpha is unused by the shader but kept = 1 so the uniform value is
+	// always sane if any future shader does sample u_Color.w.
+	vec4 m_Color = { 0.5f, 1.0f, 0.7f, 1.0f };
 	float m_RealComponent = 0.0f;
 	float m_ImaginaryComponent = 0.0f;
 

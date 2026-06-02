@@ -130,7 +130,7 @@ void Application::Run()
 
         ImGui::Text("Color");
         ImGui::SetNextItemWidth(-1.0f);
-        ImGui::ColorEdit4("##color", &m_Color.x);
+        ImGui::ColorEdit3("##color", &m_Color.x);
 
         if (currentItem == 1)
         {
