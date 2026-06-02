@@ -62,7 +62,7 @@ void ImGuiUtil::CreateContext()
 
 	GLFWwindow *window = (GLFWwindow *) Application::Instance()->m_Window;
 	ImGui_ImplGlfw_InitForOpenGL(window, true);
-	ImGui_ImplOpenGL3_Init("#version 450");
+	ImGui_ImplOpenGL3_Init("#version 330");
 }
 void ImGuiUtil::DestroyContext()
 {

@@ -43,11 +43,26 @@ if(MSVC)
 endif()
 
 # --- Output directories -----------------------------------------------------
-# Matches premake's `Binaries/<config>-<system>-<arch>/` layout closely enough.
-set(_BIN_DIR "${CMAKE_SOURCE_DIR}/Binaries/$<CONFIG>-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${_BIN_DIR}")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${_BIN_DIR}")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${_BIN_DIR}")
+# Matches premake's `Binaries/<config>-<system>-<arch>/` layout. We deliberately
+# avoid `$<CONFIG>` here: CMake 4.2 (shipped with CLion) doesn't reliably create
+# directories whose path contains a generator expression for static-library
+# targets, so we set explicit per-config variables instead.
+set(_BIN_SUFFIX "${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}")
+
+if(CMAKE_CONFIGURATION_TYPES)
+    foreach(_cfg ${CMAKE_CONFIGURATION_TYPES})
+        string(TOUPPER "${_cfg}" _cfg_upper)
+        set(_dir "${CMAKE_SOURCE_DIR}/Binaries/${_cfg}-${_BIN_SUFFIX}")
+        set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${_cfg_upper} "${_dir}")
+        set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${_cfg_upper} "${_dir}")
+        set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${_cfg_upper} "${_dir}")
+    endforeach()
+else()
+    set(_dir "${CMAKE_SOURCE_DIR}/Binaries/${CMAKE_BUILD_TYPE}-${_BIN_SUFFIX}")
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${_dir}")
+    set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${_dir}")
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${_dir}")
+endif()
 
 # --- Visual Studio: pick the executable as the F5 / startup project ---------
 set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT MandelbrotSet)

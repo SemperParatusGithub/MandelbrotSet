@@ -1,9 +1,31 @@
-# Directories
+# Build artifacts
 Binaries/
+build/
+Build/
+out/
+cmake-build-*/
 
-# VS
+# CMake
+CMakeCache.txt
+CMakeFiles/
+CMakeUserPresets.json
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+*.cmake.in.out
+
+# Visual Studio
 .vs/
-**.sln
-**.vcxproj
-**.vcxproj.filters
-**.vcxproj.user
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+
+# IDEs
+.idea/
+.vscode/
+.cache/
+
+# macOS / Xcode
+.DS_Store
+*.xcodeproj/

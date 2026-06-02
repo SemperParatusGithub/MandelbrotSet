@@ -5,7 +5,13 @@
 #include "Shader.h"
 
 
-static const double MaxZoomLevel = 3.25e15;
+// fp32 precision floor: pixel spacing 1/Z must stay above the smallest
+// representable delta at |c| ~ 2, i.e. FLT_EPSILON * 2 ~= 2.4e-7. That gives
+// Z <= ~4.2e6 as the strict ceiling; we sit slightly past it (mirroring the
+// original `dvec2` value's 1.5x stretch over the fp64 floor) and accept some
+// visible pixelation at maximum zoom. Switch to perturbation theory for
+// deeper zoom — see README.
+static const double MaxZoomLevel = 5.0e6;
 static const double MinZoomLevel = 200;
 
 static const double ZoomSpeed = 1.0f;

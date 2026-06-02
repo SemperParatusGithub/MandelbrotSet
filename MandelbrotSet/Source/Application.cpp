@@ -19,6 +19,14 @@ Application::Application()
 	s_Instance = this;
 
 	assert(glfwInit());
+
+	// Request an OpenGL 3.3 Core Profile context. Forward-compat is
+	// required on macOS, harmless on Windows/Linux.
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
+
 	LOG_INFO("Creating Window: 1280, 720");
 	m_Window = glfwCreateWindow(1280, 720, "Mandelbrot set", nullptr, nullptr);
 	glfwMakeContextCurrent(m_Window);
@@ -73,12 +81,14 @@ void Application::Run()
 
         auto &shader = currentItem == 0 ? m_MandelbrotShader : m_JuliaSetShader;
 
+        const dvec2 viewport = GetMainViewportSize();
+
         shader.Bind();
         shader.SetInt("u_MaxIterations", m_MaxIterations);
-        shader.SetDouble2("u_ScreenSize", GetMainViewportSize());
-        shader.SetDouble("u_Zoom", m_ZoomLevel);
-        shader.SetDouble2("u_Offset", m_CameraPosition);
-        shader.SetFloat4("u_Color", m_Color);
+        shader.SetFloat2("u_ScreenSize", { (float) viewport.x, (float) viewport.y });
+        shader.SetFloat ("u_Zoom",       (float) m_ZoomLevel);
+        shader.SetFloat2("u_Offset",     { (float) m_CameraPosition.x, (float) m_CameraPosition.y });
+        shader.SetFloat4("u_Color",      m_Color);
         if (currentItem == 1)   // Julia Set
         {
             shader.SetFloat("u_RealComponent", m_RealComponent);
@@ -185,14 +195,16 @@ void Application::RenderFullscreenQuad()
             0, 1, 2, 2, 3, 0
         };
 
-        glCreateVertexArrays(1, &VertexArray);
+        // glCreateBuffers / glCreateVertexArrays are DSA (GL 4.5+) and unavailable
+        // on a 3.3 core context, so use the legacy bind-to-edit form.
+        glGenVertexArrays(1, &VertexArray);
         glBindVertexArray(VertexArray);
 
-        glCreateBuffers(1, &VertexBuffer);
+        glGenBuffers(1, &VertexBuffer);
         glBindBuffer(GL_ARRAY_BUFFER, VertexBuffer);
         glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-        glCreateBuffers(1, &IndexBuffer);
+        glGenBuffers(1, &IndexBuffer);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IndexBuffer);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
